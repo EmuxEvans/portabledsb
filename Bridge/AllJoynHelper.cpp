@@ -283,10 +283,10 @@ bridge::AllJoynHelper::EncodeBusObjectName(std::string const& s, std::string &t)
   t = TrimChar(t, '/');
 }
 
-void
-bridge::AllJoynHelper::EncodePropertyOrMethodOrSignalName(std::string const& s, std::string &t)
+std::string
+bridge::AllJoynHelper::EncodePropertyOrMethodOrSignalName(std::string const& s)
 {
-  t.clear();
+  std::string t;
 
   bool upperCaseNextChar = true;
   bool is1stChar = true;
@@ -307,6 +307,8 @@ bridge::AllJoynHelper::EncodePropertyOrMethodOrSignalName(std::string const& s, 
       upperCaseNextChar = true;
     }
   }
+
+  return t;
 }
 
 void

@@ -1,7 +1,10 @@
 #include "DeviceMain.h"
 
+#include "AdapterConstants.h"
 #include "AllJoynHelper.h"
 #include "BridgeDevice.h"
+#include "DeviceMethod.h"
+#include "DeviceSignal.h"
 #include "Common/Log.h"
 
 namespace
@@ -20,6 +23,7 @@ static std::string BuildBusObjectPath(const std::string& name)
 bridge::DeviceMain::DeviceMain(BridgeDevice& parent, const shared_ptr<IAdapterDevice>& adapterDevice)
   : ajn::BusObject(BuildBusObjectPath(adapterDevice->GetName()).c_str(), false)
   , m_parent(parent)
+  , m_adapterDevice(adapterDevice)
   , m_indexForSignal(1)
   , m_indexForMethod(1)
   , m_interfaceDescription(NULL)
@@ -59,9 +63,9 @@ bridge::DeviceMain::Initialize()
     return st;
   }
 
-  for (std::map<std::string, DeviceMethod*>::iterator i = m_deviceMethods.begin(); i != m_deviceMethods.end(); ++i)
+  for (auto i : m_deviceMethods)
   {
-    const char* methodName = i->first.c_str();
+    const char* methodName = i.first.c_str();
     const ajn::InterfaceDescription::Member* member = m_interfaceDescription->GetMember(methodName);
     if (!member) {
       DSBLOG_WARN("Failed to find InterfaceDescriptionMember for %s", methodName);
@@ -96,11 +100,9 @@ bridge::DeviceMain::IsMethodNameUnique(std::string const& name)
 }
 
 bool
-bridge::DeviceMain::IsSignalNameUnique(std::string const&)
+bridge::DeviceMain::IsSignalNameUnique(std::string const& name)
 {
-  // TODO:
-  DSBLOG_NOT_IMPLEMENTED();
-  return false;
+  return m_deviceSignals.find(name) != m_deviceSignals.end();
 }
 
 QStatus
@@ -123,7 +125,22 @@ bridge::DeviceMain::CreateMethodsAndSignals()
     return st;
   }
 
-  // TODO: Create methods and signals
+  for (auto adapterMethod : m_adapterDevice->GetMethods())
+  {
+    auto i = m_deviceMethods.insert(std::make_pair(adapterMethod->GetName(), DeviceMethod(*this, adapterMethod)));
+    st = i.first->second.Initialize();
+    if (st != ER_OK)
+      return st;
+  }
+
+  for (auto adapterSignal : m_adapterDevice->GetSignals())
+  {
+    // change of value signal only concerns IAdapterProperty hence not this class
+    if (adapterSignal->GetName() == Constants::CHANGE_OF_VALUE_SIGNAL)
+      continue;
+
+    m_deviceSignals.insert(std::make_pair(adapterSignal->GetName(), DeviceSignal(*this, adapterSignal)));
+  }
 
   m_interfaceDescription->Activate();
 
@@ -133,7 +150,6 @@ bridge::DeviceMain::CreateMethodsAndSignals()
 ajn::InterfaceDescription*
 bridge::DeviceMain::GetInterfaceDescription()
 {
-  DSBLOG_NOT_IMPLEMENTED();
   return m_interfaceDescription;
 }
 

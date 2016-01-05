@@ -31,7 +31,7 @@ namespace bridge
     static QStatus GetSignature(common::Variant::DataType type, std::string& sig);
 
     static void EncodeBusObjectName(std::string const& s, std::string &builtName);
-    static void EncodePropertyOrMethodOrSignalName(std::string const& s, std::string &builtName);
+    static std::string EncodePropertyOrMethodOrSignalName(std::string const&);
     static void EncodeStringForInterfaceName(std::string const& s, std::string& encoded);
     static std::string EncodeStringForServiceName(std::string const&);
     static std::string EncodeStringForRootServiceName(std::string const&);

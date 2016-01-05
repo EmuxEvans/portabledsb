@@ -4,6 +4,7 @@
 #include "IAdapter.h"
 #include "DeviceMain.h"
 #include "DeviceProperty.h"
+#include "PropertyInterface.h"
 #include <alljoyn/BusAttachment.h>
 
 namespace bridge
@@ -41,6 +42,8 @@ namespace bridge
     QStatus ConnectToAllJoyn();
     QStatus ShutdownAllJoyn();
     QStatus RegisterSignalHandlers(bool isRegister);
+
+    shared_ptr<PropertyInterface> GetInterfaceProperty(IAdapterProperty&, QStatus&);
 
     shared_ptr<IAdapterDevice> m_device;
     shared_ptr<IAdapter> m_adapter;

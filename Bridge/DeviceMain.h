@@ -41,12 +41,13 @@ namespace bridge
 
   private:
     BridgeDevice&                               m_parent;
+    shared_ptr<IAdapterDevice>                  m_adapterDevice;
     int                                         m_indexForSignal;
     int                                         m_indexForMethod;
     ajn::InterfaceDescription*                  m_interfaceDescription;
     std::string                                 m_interfaceName;
-    std::map<std::string, DeviceMethod* >       m_deviceMethods;
-    std::map<std::string, DeviceSignal* >       m_deviceSignals;
+    std::map<std::string, DeviceMethod>         m_deviceMethods;
+    std::map<std::string, DeviceSignal>         m_deviceSignals;
     bool                                        m_registeredOnAllJoyn;
   };
 }

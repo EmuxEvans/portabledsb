@@ -164,7 +164,28 @@ bridge::BridgeDevice::BuildServiceName()
 QStatus
 bridge::BridgeDevice::CreateDeviceProperties()
 {
-  DSBLOG_NOT_IMPLEMENTED();
+  // TODO: VerifyCOVSupport();
+
+  for (auto property : m_device->GetProperties())
+  {
+    QStatus st;
+    shared_ptr<PropertyInterface> propertyInterface = GetInterfaceProperty(*property, st);
+    if (st != ER_OK)
+      return st;
+    if (!propertyInterface)
+    {
+      DSBLOG_ERROR("GetInterfaceProperty returned ER_OK but propertyInterface is null");
+      return ER_FAIL;
+    }
+
+    shared_ptr<DeviceProperty> deviceProperty(new DeviceProperty(property, propertyInterface, *this));
+    st = deviceProperty->Initialize();
+    if (st != ER_OK)
+      return st;
+
+    m_deviceProperties.insert(std::make_pair(deviceProperty->GetPathName(), deviceProperty));
+    m_about.AddObject(deviceProperty->GetBusObject(), *deviceProperty->GetPropertyInterface()->GetInterfaceDescription());
+  }
   return ER_OK;
 }
 
